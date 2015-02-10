@@ -54,7 +54,7 @@ avgStepsPerInterval <- aggregate(steps ~ interval, activity, mean)
 #### Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 ```{r}
 plot(avgStepsPerInterval, type='l', col= "red", 
-  	main="Average number of steps averaged over all days", xlab="5-minute interval", 
+  	main="Average number of steps averaged accross all days", xlab="5-minute interval", 
     ylab="Average steps take accross all days")
 ```
 
@@ -73,7 +73,7 @@ sum(is.na(activity))
 
 #### Devise a strategy for filling in all of the missing values in the dataset.
 
-My strategy would be to fill the missing values (NAs) with the mean for that 5-minute interval
+My strategy would be to fill the missing values (NAs) in the steps column with the mean for that 5-minute interval
 
 #### Create a new dataset that is equal to the original dataset but with the missing data filled in.
 ```{r}
@@ -86,6 +86,13 @@ for (i in 1:nrow(newActivity)) {
 
 head(newActivity)
 ```
+
+
+```{r}
+sum(is.na(newActivity))
+```
+
+
 #### Calculate the new total number of steps taken per day and show sample of resultant.
 ```{r}
 newTotalSteps <- aggregate(steps ~ date, newActivity, sum)
@@ -110,3 +117,29 @@ median(newTotalSteps$steps)
 Yes the median value differs from the estimates from the first part of the assignment. After imputing missing values in the dataset, the new mean of total steps taken per day is equal to the old mean whereas the new median of total steps taken per day is greater than that of the old median. Also in the new calculation the mean and median values are equal.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+#### Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r}
+newActivity$weekdays <- weekdays(newActivity$date)
+
+newActivity$DayType[(newActivity$weekdays == "Saturday" | newActivity$weekdays == "Sunday")] <- "weekend"
+newActivity$DayType[!(newActivity$weekdays == "Saturday" | newActivity$weekdays == "Sunday")] <- "weekday"
+
+newActivity$DayType <- factor(newActivity$DayType)
+```
+#### Calculate the average number of steps taken accoss all weekdays and weekends
+
+```{r}
+avgStepsDayType <- aggregate(steps~interval+DayType, newActivity, mean)
+head(avgStepsDayType)
+str(avgStepsDayType)
+```
+#### Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis)
+
+```{r}
+library(lattice)
+xyplot(steps ~ interval | DayType, data = avgStepsDayType, type = "l", xlab = "5-minute interval", 
+  	ylab = "Averaged steps accross all weekends or weekdays", layout = c(1, 2))
+```
+
